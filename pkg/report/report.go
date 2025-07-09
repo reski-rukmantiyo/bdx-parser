@@ -254,8 +254,8 @@ func (mf *MonthlyFiller) LoadMonthlyTemplate(filename string, preserveExisting b
 			}
 		}
 
-		// Ensure all rows have at least 12 columns
-		for len(mf.monthlyData[i]) < 12 {
+		// Ensure all rows have at least 15 columns (including summary columns)
+		for len(mf.monthlyData[i]) < 15 {
 			mf.monthlyData[i] = append(mf.monthlyData[i], nil)
 		}
 	}
@@ -335,6 +335,10 @@ func (mf *MonthlyFiller) FillPDUData() error {
 		"L3Min": 9,  // Current L3 Min
 		"L3Avg": 10, // Current L3 AVG
 		"L3Max": 11, // Current L3 Max
+		// Summary per Rack columns
+		"SummaryMin": 12, // Current Min (summary)
+		"SummaryAvg": 13, // Current AVG (summary)
+		"SummaryMax": 14, // Current Max (summary)
 	}
 
 	// Fill data for Q1-Q18
@@ -345,21 +349,75 @@ func (mf *MonthlyFiller) FillPDUData() error {
 			return fmt.Errorf("row index %d exceeds template size", rowIndex)
 		}
 
-		// Fill each measurement type
-		mf.monthlyData[rowIndex][columnMapping["L1Min"]] = mf.pduData.L1Min[q]
-		mf.monthlyData[rowIndex][columnMapping["L1Avg"]] = mf.pduData.L1Avg[q]
-		mf.monthlyData[rowIndex][columnMapping["L1Max"]] = mf.pduData.L1Max[q]
-		mf.monthlyData[rowIndex][columnMapping["L2Min"]] = mf.pduData.L2Min[q]
-		mf.monthlyData[rowIndex][columnMapping["L2Avg"]] = mf.pduData.L2Avg[q]
-		mf.monthlyData[rowIndex][columnMapping["L2Max"]] = mf.pduData.L2Max[q]
-		mf.monthlyData[rowIndex][columnMapping["L3Min"]] = mf.pduData.L3Min[q]
-		mf.monthlyData[rowIndex][columnMapping["L3Avg"]] = mf.pduData.L3Avg[q]
-		mf.monthlyData[rowIndex][columnMapping["L3Max"]] = mf.pduData.L3Max[q]
+		// Ensure row has enough columns
+		for len(mf.monthlyData[rowIndex]) < 15 {
+			mf.monthlyData[rowIndex] = append(mf.monthlyData[rowIndex], nil)
+		}
+
+		// Fill L1, L2, L3 data
+		l1Min := mf.pduData.L1Min[q]
+		l1Avg := mf.pduData.L1Avg[q]
+		l1Max := mf.pduData.L1Max[q]
+		l2Min := mf.pduData.L2Min[q]
+		l2Avg := mf.pduData.L2Avg[q]
+		l2Max := mf.pduData.L2Max[q]
+		l3Min := mf.pduData.L3Min[q]
+		l3Avg := mf.pduData.L3Avg[q]
+		l3Max := mf.pduData.L3Max[q]
+
+		mf.monthlyData[rowIndex][columnMapping["L1Min"]] = l1Min
+		mf.monthlyData[rowIndex][columnMapping["L1Avg"]] = l1Avg
+		mf.monthlyData[rowIndex][columnMapping["L1Max"]] = l1Max
+		mf.monthlyData[rowIndex][columnMapping["L2Min"]] = l2Min
+		mf.monthlyData[rowIndex][columnMapping["L2Avg"]] = l2Avg
+		mf.monthlyData[rowIndex][columnMapping["L2Max"]] = l2Max
+		mf.monthlyData[rowIndex][columnMapping["L3Min"]] = l3Min
+		mf.monthlyData[rowIndex][columnMapping["L3Avg"]] = l3Avg
+		mf.monthlyData[rowIndex][columnMapping["L3Max"]] = l3Max
+
+		// Calculate summary per rack
+		// Current Min = minimum of all min values (L1, L2, L3)
+		summaryMin := mf.minValue(l1Min, l2Min, l3Min)
+
+		// Current AVG = average of all avg values (L1, L2, L3)
+		summaryAvg := (l1Avg + l2Avg + l3Avg) / 3.0
+
+		// Current Max = maximum of all max values (L1, L2, L3)
+		summaryMax := mf.maxValue(l1Max, l2Max, l3Max)
+
+		// Fill summary columns
+		mf.monthlyData[rowIndex][columnMapping["SummaryMin"]] = summaryMin
+		mf.monthlyData[rowIndex][columnMapping["SummaryAvg"]] = summaryAvg
+		mf.monthlyData[rowIndex][columnMapping["SummaryMax"]] = summaryMax
 	}
 
-	fmt.Printf("Successfully filled %s data into PDU %s section\n",
+	fmt.Printf("Successfully filled %s data into PDU %s section (including summary calculations)\n",
 		mf.pduData.PDUName, section.Name)
 	return nil
+}
+
+// minValue returns the minimum of three float64 values
+func (mf *MonthlyFiller) minValue(a, b, c float64) float64 {
+	min := a
+	if b < min {
+		min = b
+	}
+	if c < min {
+		min = c
+	}
+	return min
+}
+
+// maxValue returns the maximum of three float64 values
+func (mf *MonthlyFiller) maxValue(a, b, c float64) float64 {
+	max := a
+	if b > max {
+		max = b
+	}
+	if c > max {
+		max = c
+	}
+	return max
 }
 
 // ExportToCSV exports the filled template to CSV format
@@ -522,11 +580,16 @@ func main() {
 	fmt.Printf("Monthly Template: %s\n", monthlyFile)
 	fmt.Printf("Output: %s\n", outputFile)
 	fmt.Printf("Filled PDU section: %s\n", filler.pduData.PDUName)
+	fmt.Printf("Summary calculations: ✅ Current Min/AVG/Max per rack calculated\n")
 	if preserveExisting {
 		fmt.Printf("Mode: Preserve existing data ✅\n")
 		fmt.Println("\n📝 Next steps:")
 		fmt.Printf("   Run: %s total_<next_pdu>.csv\n", os.Args[0])
 		fmt.Println("   This will add more PDU data while keeping existing sections intact.")
+		fmt.Println("\n📊 Summary per Rack columns now filled with:")
+		fmt.Println("   - Current Min: Minimum across L1/L2/L3 min values")
+		fmt.Println("   - Current AVG: Average across L1/L2/L3 avg values")
+		fmt.Println("   - Current Max: Maximum across L1/L2/L3 max values")
 	} else {
 		fmt.Printf("Mode: Clean template (previous data erased) ⚠️\n")
 	}
