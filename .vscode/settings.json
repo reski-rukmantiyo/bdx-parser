@@ -1,0 +1,46 @@
+{
+    "go.buildTags": "",
+    "go.buildFlags": [
+        "-trimpath"
+    ],
+    "go.lintTool": "golangci-lint",
+    "go.lintFlags": [
+        "--fast"
+    ],
+    "go.formatTool": "goimports",
+    "go.useLanguageServer": true,
+    "go.gopath": "",
+    "go.goroot": "",
+    "go.toolsGopath": "",
+    "go.inferGopath": true,
+    "go.autocompleteUnimportedPackages": true,
+    "go.gocodePackageLookupMode": "go",
+    "go.gotoSymbol.includeImports": true,
+    "go.useCodeSnippetsOnFunctionSuggest": true,
+    "go.useCodeSnippetsOnFunctionSuggestWithoutType": true,
+    "go.docsTool": "gogetdoc",
+    "go.testFlags": [
+        "-v"
+    ],
+    "go.testTimeout": "30s",
+    "go.coverOnSave": false,
+    "go.coverOnSingleTest": false,
+    "go.coverOnSingleTestFile": false,
+    "go.coverOnTestPackage": false,
+    "files.associations": {
+        "*.go": "go",
+        "Makefile": "makefile",
+        "*.mod": "go.mod",
+        "*.sum": "go.sum"
+    },
+    "files.exclude": {
+        "**/bin": true,
+        "**/dist": true,
+        "**/*.exe": true
+    },
+    "search.exclude": {
+        "**/bin": true,
+        "**/dist": true,
+        "**/*.exe": true
+    }
+}

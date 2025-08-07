@@ -1,0 +1,147 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build-pdu-parser",
+            "type": "shell",
+            "command": "go",
+            "args": [
+                "build",
+                "-o",
+                "bin/pdu-parser",
+                "main.go"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": [
+                "$go"
+            ]
+        },
+        {
+            "label": "build-monthly-filler",
+            "type": "shell",
+            "command": "go",
+            "args": [
+                "build",
+                "-o",
+                "bin/monthly-filler",
+                "pkg/report/report.go"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": [
+                "$go"
+            ]
+        },
+        {
+            "label": "build-all",
+            "dependsOrder": "parallel",
+            "dependsOn": [
+                "build-pdu-parser",
+                "build-monthly-filler"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "cross-compile-all",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "build-all"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "run-pdu-parser",
+            "type": "shell",
+            "command": "go",
+            "args": [
+                "run",
+                "main.go",
+                "${input:inputFile}"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "run-monthly-filler",
+            "type": "shell",
+            "command": "go",
+            "args": [
+                "run",
+                "pkg/report/report.go",
+                "${input:pduDataFile}"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "clean",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "clean"
+            ],
+            "group": "build"
+        },
+        {
+            "label": "tidy",
+            "type": "shell",
+            "command": "go",
+            "args": [
+                "mod",
+                "tidy"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "inputFile",
+            "description": "Enter input Excel file path",
+            "default": "C3.xlsx",
+            "type": "promptString"
+        },
+        {
+            "id": "pduDataFile",
+            "description": "Enter PDU data CSV file path",
+            "default": "total_a1.csv",
+            "type": "promptString"
+        }
+    ]
+}

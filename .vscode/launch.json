@@ -1,0 +1,95 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug PDU Parser",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/main.go",
+            "args": [
+                "C3.xlsx"
+            ],
+            "env": {},
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Debug PDU Parser (Custom File)",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/main.go",
+            "args": [
+                "${input:inputFile}",
+                "${input:outputFile}"
+            ],
+            "env": {},
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Debug Monthly Filler",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/pkg/report/report.go",
+            "args": [
+                "total_a1.csv"
+            ],
+            "env": {},
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Debug Monthly Filler (Custom)",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/pkg/report/report.go",
+            "args": [
+                "${input:pduDataFile}",
+                "-t",
+                "${input:templateFile}",
+                "-o",
+                "${input:outputFile}"
+            ],
+            "env": {},
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Attach to Process",
+            "type": "go",
+            "request": "attach",
+            "mode": "local",
+            "processId": 0
+        }
+    ],
+    "inputs": [
+        {
+            "id": "inputFile",
+            "description": "Enter input Excel file path",
+            "default": "C3.xlsx",
+            "type": "promptString"
+        },
+        {
+            "id": "outputFile",
+            "description": "Enter output CSV file path",
+            "default": "total_c3.csv",
+            "type": "promptString"
+        },
+        {
+            "id": "pduDataFile",
+            "description": "Enter PDU data CSV file path",
+            "default": "total_a1.csv",
+            "type": "promptString"
+        },
+        {
+            "id": "templateFile",
+            "description": "Enter monthly template file path",
+            "default": "monthlyjune2025.xlsx",
+            "type": "promptString"
+        }
+    ]
+}
